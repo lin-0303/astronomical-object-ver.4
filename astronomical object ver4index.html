@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>3D 天球模擬器 - 修正版</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050505; }
+        #ui { 
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            color: white; 
+            font-family: sans-serif; 
+            pointer-events: none;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        b { color: #44aaff; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h1>天球模擬器 (Celestial Sphere)</h1>
+        <p>滑鼠拖曳：<b>旋轉</b> | 滾輪：<b>縮放</b></p>
+        <p>中心：地球 | 藍色網格：天赤道座標</p>
+    </div>
+
+    <!-- 使用 ES Modules 方式載入 -->
+    <script type="module">
+        // 修正處：使用完整的 CDN 網址，解決 "Failed to resolve module specifier" 錯誤
+        import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+        import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+        // 1. 初始化場景與相機
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. 建立天球 (Celestial Sphere) 網格
+        const sphereGeo = new THREE.SphereGeometry(150, 32, 32);
+        const wireframe = new THREE.WireframeGeometry(sphereGeo);
+        const line = new THREE.LineSegments(wireframe);
+        line.material.depthTest = true;
+        line.material.opacity = 0.3;
+        line.material.transparent = true;
+        line.material.color.setHex(0x4444ff);
+        scene.add(line);
+
+        // 3. 建立赤道線 (Celestial Equator)
+        const equatorGeo = new THREE.TorusGeometry(150, 0.3, 16, 100);
+        const equatorMat = new THREE.MeshBasicMaterial({ color: 0xff3333 });
+        const equator = new THREE.Mesh(equatorGeo, equatorMat);
+        equator.rotation.x = Math.PI / 2;
+        scene.add(equator);
+
+        // 4. 加入中心地球
+        const earthGeo = new THREE.SphereGeometry(10, 32, 32);
+        const earthMat = new THREE.MeshNormalMaterial(); // 使用法線材質，看起來會有色彩變化
+        const earth = new THREE.Mesh(earthGeo, earthMat);
+        scene.add(earth);
+
+        // 5. 加入隨機背景星星
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsCount = 3000;
+        const posArray = new Float32Array(stars
